@@ -52,7 +52,7 @@ struct GameData
   OpSet ops;
 
   // game mode
-  enum mode_t {practice, normal, medium, hard, impossible} mode;
+  enum mode_t {practice, normal, medium, hard} mode;
 
   // game settings
   int stackSize;

@@ -8,6 +8,7 @@
  */
 
 #include "game.hh"
+#include "about.hh"
 using std::string;
 using std::map;
 using std::make_pair;
@@ -201,7 +202,7 @@ main(int argc, char* argv[])
   glutIdleFunc(glutPostRedisplay);
   glutKeyboardFunc(keyboard);
 
-  // initialize resources
+  // initialize default resources
   loadFontAF(resources.font, argv[1]);
   resources.cm = new GCharMap(resources.font);
   resources.minWidth = 0.2;
@@ -217,14 +218,14 @@ main(int argc, char* argv[])
   resources.bar[1].set    (1., 0., 0.);
 
   // initialize game data
-  data.mode = static_cast<GameData::mode_t>(atoi(argv[2])); //GameData::practice;
+  data.mode = static_cast<GameData::mode_t>(atoi(argv[2]));
   data.stackSize = 20;
   data.errorPenality = 5;
   data.timePenality = 1;
   data.balance = -1;
 
   // setup operators
-  for(const char* sym = "+-*/"; *sym; ++sym)
+  for(const char* sym = (argc > 3? argv[3]: "+-*/"); *sym; ++sym)
   {
     Operation* op = opFromSym(*sym);
     data.times.insert(make_pair(op,
@@ -257,7 +258,9 @@ main(int argc, char* argv[])
   // main loop
   off = now();
   srand48(time);
-  state = new Game(resources, 0., data);
+  state = (data.mode < 0?
+      static_cast<State*>(new About(resources, 0., data)):
+      static_cast<State*>(new Game(resources, 0., data)));
   glutMainLoop();
   return EXIT_SUCCESS;
 }

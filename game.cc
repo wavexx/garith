@@ -27,7 +27,7 @@ using std::sprintf;
 void
 Game::drawFWString(const char* str, const Point& pos)
 {
-  // draws a fixed with strings. useful for numbers.
+  // draws a fixed width strings. useful for numbers.
   glPushMatrix();
   glTranslatef(pos.x, pos.y, 0.);
 

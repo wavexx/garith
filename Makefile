@@ -9,7 +9,7 @@ TARGETS = f2f garith
 F2F_OBJECTS = f2f.o
 F2F_LDADD = -lufm
 
-GARITH_OBJECTS = grs.o font.o gfont.o game.o garith.o
+GARITH_OBJECTS = grs.o font.o gfont.o game.o garith.o about.o
 GARITH_LDADD = $(GLUT_LDADD)
 
 
