@@ -76,7 +76,7 @@ Game::drawStackElem(const Question& q, const Point& pos)
   glEnd();
 
   // string
-  char fmt[16];
+  char fmt[32];
   sprintf(fmt, "%%%dd%%c%%%dd", maxLenA, maxLenB);
 
   char* buf = new char[maxLen + 1];
@@ -173,6 +173,168 @@ Game::updateAvg()
 }
 
 
+void
+Game::updateTimes(const Time shift)
+{
+  playingTime += shift;
+  question.cum += shift;
+}
+
+
+void
+Game::resetQuestion()
+{
+  question.kernel = randFind(data.kernels, NrPred(*this));
+  const Kernel& kernel(question.kernel->first);
+  question.r = kernel.o->result(kernel.a, kernel.b, question.na);
+  question.cum = 0.;
+  question.errs = 0;
+}
+
+
+void
+Game::initAnim()
+{
+  // basic animation data
+  state = animating;
+  frame.begin = now;
+  frame.end = now + resources.animTime;
+}
+
+
+void
+Game::initGame()
+{
+  // basic animation data
+  state = playing;
+  frame.begin = now;
+  frame.end = now + avgTime;
+}
+
+
+void
+Game::drawState()
+{
+  // always draw the stack
+  QDeque::iterator it = stack.begin();
+  for(int i = 0; it != stack.end(); ++i, ++it)
+    drawStackElem(*it, Point(0, nmVSpace * i));
+
+  // common variables
+  float stackHead = nmVSpace * stack.size();
+
+  if(state == animating)
+  {
+    // animating parts
+    float oldHead = nmVSpace * oldSize;
+    float ci = interpCubic(frame, now);
+
+    // dropping element
+    if(static_cast<int>(stack.size()) >= oldSize)
+      drawStackElem(question, interpolate(ci,
+	      Point(0, urGeom.y), Point(0, stackHead)));
+    else
+      drawStackElem(question, Point(0, stackHead));
+
+    // removing element
+    if(lastResult)
+      drawStackElem(lastQuestion, Point(-ci * stackW * 2, oldHead));
+
+    // answer symbol
+    drawAnswer(interpolate(ci, oldHead, stackHead));
+  }
+  else
+  {
+    // current element and answer
+    drawStackElem(question, Point(0, stackHead));
+    drawAnswer(stackHead);
+  }
+
+  // remaining time
+  drawBar();
+}
+
+
+void
+Game::nextState()
+{
+  if(state == animating)
+    initGame();
+  else if(state == playing)
+    timeOut();
+}
+
+
+void
+Game::contGame()
+{
+  // check game status
+  if(stack.size() == data.stackSize)
+    stopGame();
+  else
+  {
+    // continue
+    answer.clear();
+    initAnim();
+  }
+}
+
+
+void
+Game::stopGame()
+{
+  state = gameOver;
+}
+
+
+void
+Game::timeOut()
+{
+  // update stack
+  lastResult = false;
+  oldSize = stack.size();
+  stack.push_back(question);
+  resetQuestion();
+  contGame();
+}
+
+
+void
+Game::submitAnswer()
+{
+  // check result
+  int r = strtol(answer.c_str(), NULL, 10);
+  lastResult = (r == question.r);
+  oldSize = stack.size();
+
+  if(lastResult)
+  {
+    // correct, update the stack
+    lastQuestion = question;
+    data.update(question.kernel, question.errs, question.cum);
+    updateAvg();
+    
+    if(stack.size())
+    {
+      // recover and old question
+      question = stack.back();
+      stack.pop_back();
+    }
+    else
+      resetQuestion();
+  }
+  else
+  {
+    // wrong answers
+    ++question.errs;
+    stack.push_back(question);
+    resetQuestion();
+  }
+
+  contGame();
+}
+
+
 bool
 Game::NrPred::operator()(const Kernel& kernel) const
 {
@@ -187,38 +349,6 @@ Game::NrPred::operator()(const Kernel& kernel) const
       return false;
 
   return true;
-}
-
-
-void
-Game::initAnim()
-{
-  // basic animation data
-  state = animating;
-  frame.begin = now;
-  frame.end = now + resources.animTime;
-  answer.clear();
-}
-
-
-void
-Game::initQuestion()
-{
-  question.kernel = randFind(data.kernels, NrPred(*this));
-  const Kernel& kernel(question.kernel->first);
-  question.r = kernel.o->result(kernel.a, kernel.b, question.na);
-  question.cum = 0.;
-  question.errs = 0;
-}
-
-
-void
-Game::initGame()
-{
-  // basic animation data
-  state = playing;
-  frame.begin = now;
-  frame.end = now + avgTime;
 }
 
 
@@ -254,12 +384,12 @@ Game::Game(const Resources& resources, const Time now, GameData& data)
   stackW = nmHSpace * maxLen;
 
   // initial state
+  playingTime = 0.;
   this->now = now;
   lastResult = false;
   oldSize = -1;
-  //lastTime = getAvgTime();
   updateAvg();
-  initQuestion();
+  resetQuestion();
   initAnim();
 }
 
@@ -277,101 +407,17 @@ Game::reshape(const int w, const int h)
 void
 Game::display(const Time now)
 {
-  // update time/status
+  // update times
+  if(state == playing)
+    updateTimes(now - this->now);
   this->now = now;
-  updateStatus();
 
-  // always draw the stack
-  QDeque::iterator it = stack.begin();
-  for(int i = 0; it != stack.end(); ++i, ++it)
-    drawStackElem(*it, Point(0, nmVSpace * i));
-
-  float stackHead = nmVSpace * stack.size();
-  if(state == animating)
-  {
-    float oldHead = nmVSpace * oldSize;
-    float ci = interpCubic(frame, now);
-
-    // dropping element
-    if(static_cast<int>(stack.size()) >= oldSize)
-      drawStackElem(question, interpolate(ci,
-	      Point(0, urGeom.y), Point(0, stackHead)));
-    else
-      drawStackElem(question, Point(0, stackHead));
-
-    // moving element
-    if(lastResult)
-      drawStackElem(lastQuestion, Point(-ci * stackW * 2, oldHead));
-
-    // answer
-    drawAnswer(interpolate(ci, oldHead, stackHead));
-  }
-  else
-  {
-    // current element and answer
-    Time save = question.cum;
-    question.cum = save + (now - frame.begin);
-    drawStackElem(question, Point(0, stackHead));
-    question.cum = save;
-    drawAnswer(stackHead);
-  }
-
-  // remaining time
-  drawBar();
-}
-
-
-void
-Game::updateStatus()
-{
+  // update status
   if(now > frame.end)
-  {
-    if(state == animating)
-      initGame();
-    else
-      finishGame();
-  }
-}
+    nextState();
 
-
-void
-Game::finishGame()
-{
-  // update question status
-  question.cum += now - frame.begin;
-  int r = strtol(answer.c_str(), NULL, 10);
-  lastResult = (r == question.r);
-  lastQuestion = question;
-  oldSize = stack.size();
-
-  if(lastResult)
-  {
-    // correct, update the stack
-    data.update(question.kernel, question.errs, question.cum);
-    updateAvg();
-    //lastTime = (frame.end - now);
-
-    if(stack.size())
-    {
-      question = stack.back();
-      stack.pop_back();
-    }
-    else
-      initQuestion();
-  }
-  else
-  {
-    // wrong
-    if(answer.size())
-      ++question.errs;
-    //lastTime = getAvgTime();
-
-    stack.push_back(question);
-    initQuestion();
-  }
-
-  // initialize a new game
-  initAnim();
+  // actual drawing
+  drawState();
 }
 
 
@@ -394,5 +440,11 @@ Game::keyboard(const unsigned char key)
       answer += key;
   }
   else if(key == 13)
-    finishGame();
+  {
+    // empty answers as timeouts
+    if(answer.size())
+      submitAnswer();
+    else
+      timeOut();
+  }
 }

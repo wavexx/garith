@@ -45,6 +45,7 @@ class Game: public State
   int questions;
   int maxSize;
   Time avgTime;
+  Time playingTime;
 
   // question state
   QDeque stack;
@@ -62,21 +63,18 @@ class Game: public State
 
   // game utilities
   void updateAvg();
+  void updateTimes(const Time shift);
+  void resetQuestion();
+  void drawState();
+  void nextState();
+  void timeOut();
+  void submitAnswer();
 
-  void
-  initAnim();
-
-  void
-  initQuestion();
-
-  void
-  initGame();
-
-  void
-  updateStatus();
-
-  void
-  finishGame();
+  // game states
+  void initAnim();
+  void initGame();
+  void contGame();
+  void stopGame();
 
 
   // predicate for randFind
