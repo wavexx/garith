@@ -270,7 +270,8 @@ Game::initGame()
   // basic animation data
   state = playing;
 
-  if(lastResult && data.mode == GameData::hard && stack.size() < oldSize)
+  if(lastResult && data.mode == GameData::hard &&
+      static_cast<int>(stack.size()) < oldSize)
   {
     // only continue when an element was successfully removed
     frame.end = now + lastRTime;
@@ -342,13 +343,13 @@ void
 Game::contGame()
 {
   // check game status
-  if(stack.size() == data.stackSize)
+  if(static_cast<int>(stack.size()) == data.stackSize)
     stopGame();
   else
   {
     // update statistics
     ++questions;
-    if(maxSize < stack.size())
+    if(maxSize < static_cast<int>(stack.size()))
       maxSize = stack.size();
 
     // continue
@@ -552,7 +553,7 @@ Game::keyboard(const unsigned char key)
   else if(key >= '0' && key <= '9')
   {
     // number
-    if(answer.size() < maxLenR)
+    if(static_cast<int>(answer.size()) < maxLenR)
       answer += key;
   }
   else if(key == 13)

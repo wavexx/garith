@@ -29,8 +29,9 @@ randFind(WRandMap<T>& map, P pred)
 {
   // find the base/max
   int base = map.begin()->second;
+  typedef typename WRandMap<T>::iterator WRMIt;
 
-  for(WRandMap<T>::iterator it = map.begin(); it != map.end(); ++it)
+  for(WRMIt it = map.begin(); it != map.end(); ++it)
   {
     if(pred(it->first))
       if(it->second < base)
@@ -40,7 +41,7 @@ randFind(WRandMap<T>& map, P pred)
   // max extent
   int max = 0;
   
-  for(WRandMap<T>::iterator it = map.begin(); it != map.end(); ++it)
+  for(WRMIt it = map.begin(); it != map.end(); ++it)
   {
     if(pred(it->first))
       max += it->second - base + 1;
@@ -49,7 +50,7 @@ randFind(WRandMap<T>& map, P pred)
   // select the element
   int cur = 0;
   int n = static_cast<int>(drand48() * max);
-  WRandMap<T>::iterator ret;
+  WRMIt ret;
 
   for(ret = map.begin(); ret != map.end(); ++ret)
   {

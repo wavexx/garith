@@ -78,6 +78,9 @@ public:
   : resources(resources), begin(now), data(data)
   {}
 
+  virtual ~State()
+  {}
+
   // required methods
   virtual void reshape(const int w, const int h) = 0;
   virtual void display(const Time now) = 0;
