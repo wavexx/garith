@@ -260,7 +260,7 @@ Game::nextState()
 {
   if(state == animating)
     initGame();
-  else if(state == playing)
+  else if(state == playing && data.mode != GameData::practice)
     timeOut();
 }
 
@@ -314,7 +314,7 @@ Game::submitAnswer()
     data.update(question.kernel, question.errs, question.cum);
     updateAvg();
     
-    if(stack.size())
+    if(stack.size() && data.mode != GameData::veryHard)
     {
       // recover and old question
       question = stack.back();
