@@ -95,7 +95,7 @@ Game::drawStackElem(const Question& q, const Point& pos)
 
   // string
   char fmt[32];
-  sprintf(fmt, "%%%dd%%c%%%dd", maxLenA, maxLenB);
+  sprintf(fmt, "%%%dd%%c%%-%dd", maxLenA, maxLenB);
 
   char* buf = new char[maxLen + 1];
   sprintf(buf, fmt, q.na, q.kernel->first.o->sym(), q.kernel->first.b);
