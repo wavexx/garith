@@ -58,9 +58,11 @@ class Game: public State
 
   // drawing utilities
   void drawFWString(const char* str, const Point& pos);
+  void drawRString(const char* str, const Point& pos);
   void drawStackElem(const Question& q, const Point& pos);
   void drawAnswer(const float y);
   void drawBar();
+  void drawStats();
 
   // game utilities
   void updateAvg();

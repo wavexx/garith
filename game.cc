@@ -27,6 +27,7 @@ using std::sprintf;
 void
 Game::drawFWString(const char* str, const Point& pos)
 {
+  // draws a fixed with strings. useful for numbers.
   glPushMatrix();
   glTranslatef(pos.x, pos.y, 0.);
 
@@ -43,6 +44,23 @@ Game::drawFWString(const char* str, const Point& pos)
     resources.cm->draw(*str);
     glPopMatrix();
   }
+
+  glPopMatrix();
+}
+
+
+void
+Game::drawRString(const char* str, const Point& pos)
+{
+  // right aligned string
+  Bounds bounds;
+  resources.cm->bounds(bounds, str);
+
+  glPushMatrix();
+
+  glTranslatef(pos.x - (bounds.ur.x - bounds.ll.x) - bounds.ll.x,
+      pos.y /*- resources.cm->getFont().bounds.ll.y */, 0.);
+  resources.cm->draw(str);
 
   glPopMatrix();
 }
@@ -144,6 +162,38 @@ Game::drawBar()
   glVertex2f(urGeom.x - nmVSpace, 0);
   glVertex2f(urGeom.x - nmVSpace, urGeom.y);
   glEnd();
+}
+
+
+void
+Game::drawStats()
+{
+  // some useful data
+  int num = 1;
+  float anchor = urGeom.x - nmVSpace - nmHSpace;
+  char buf[32];
+  int len;
+
+  glColor4fv(resources.foreground);
+
+  // playing time
+  int seconds = static_cast<int>(playingTime);
+  len = sprintf(buf, "%d:%02d", seconds / 60, seconds % 60) - 1;
+  drawRString("playing time:", Point(anchor, urGeom.y - nmVSpace * num++));
+  drawFWString(buf, Point(anchor - nmHSpace * len,
+	  urGeom.y - nmVSpace * num++));
+
+  // questions
+  len = sprintf(buf, "%d", questions) - 1;
+  drawRString("questions:", Point(anchor, urGeom.y - nmVSpace * num++));
+  drawFWString(buf, Point(anchor - nmHSpace * len,
+	  urGeom.y - nmVSpace * num++));
+  
+  // max size
+  len = sprintf(buf, "%d", maxSize) - 1;
+  drawRString("max size:", Point(anchor, urGeom.y - nmVSpace * num++));
+  drawFWString(buf, Point(anchor - nmHSpace * len,
+	  urGeom.y - nmVSpace * num++));
 }
 
 
@@ -260,8 +310,9 @@ Game::drawState()
     drawAnswer(stackHead);
   }
 
-  // remaining time
+  // remaining time and stats
   drawBar();
+  drawStats();
 }
 
 
@@ -283,6 +334,11 @@ Game::contGame()
     stopGame();
   else
   {
+    // update statistics
+    ++questions;
+    if(maxSize < stack.size())
+      maxSize = stack.size();
+
     // continue
     answer.clear();
     initAnim();
@@ -356,6 +412,11 @@ Game::NrPred::operator()(const Kernel& kernel) const
   if(ref.data.ops.find(kernel.o) == ref.data.ops.end())
     return false;
 
+  // when in veryHard and/or limit conditions the stack is ignored
+  if(ref.data.mode == GameData::veryHard ||
+      ref.stack.size() >= ref.data.kernels.size())
+    return true;
+
   // exclude all kernels already present in the stack
   for(QDeque::const_iterator it = ref.stack.begin();
       it != ref.stack.end(); ++it)
@@ -397,8 +458,12 @@ Game::Game(const Resources& resources, const Time now, GameData& data)
   maxLen = maxLenA + 1 + maxLenB;
   stackW = nmHSpace * maxLen;
 
-  // initial state
+  // initial stats
+  questions = 0;
+  maxSize = 0;
   playingTime = 0.;
+
+  // initial state
   this->now = now;
   lastResult = false;
   lastRTime = 0.;

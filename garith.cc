@@ -12,7 +12,6 @@ using std::string;
 using std::map;
 using std::make_pair;
 
-
 #include <fstream>
 using std::ifstream;
 
@@ -52,7 +51,7 @@ loadPairs(map<string, string>& buf, const char* file)
       throw runtime_error(string("syntax error in ") + file);
 
     // insert the new element
-    buf.insert(std::make_pair(line.substr(0, eq), line.substr(eq + 1)));
+    buf.insert(make_pair(line.substr(0, eq), line.substr(eq + 1)));
   }
 
   return n;
@@ -207,7 +206,7 @@ main(int argc, char* argv[])
   resources.bar[1].set    (1., 0., 0.);
 
   // initialize game data
-  data.mode = GameData::hard;
+  data.mode = GameData::veryHard;
   data.stackSize = 20;
   data.errorPenality = 5;
   data.timePenality = 1;
