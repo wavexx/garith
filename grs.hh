@@ -38,7 +38,7 @@ struct Bounds
 
 struct Color
 {
-  Color(float r = 0., float g = 0., float b = 0., float a = 0.)
+  Color(float r = 0., float g = 0., float b = 0., float a = 1.)
   {
     set(r, g, b, a);
   }
@@ -46,7 +46,7 @@ struct Color
   float rgba[4];
 
   void
-  set(float r = 0., float g = 0., float b = 0., float a = 0.)
+  set(float r = 0., float g = 0., float b = 0., float a = 1.)
   {
     rgba[0] = r;
     rgba[1] = g;
@@ -55,6 +55,11 @@ struct Color
   }
 
   operator float*()
+  {
+    return rgba;
+  }
+
+  operator const float*() const
   {
     return rgba;
   }
