@@ -59,7 +59,7 @@ Game::drawRString(const char* str, const Point& pos)
   glPushMatrix();
 
   glTranslatef(pos.x - (bounds.ur.x - bounds.ll.x) - bounds.ll.x,
-      pos.y /*- resources.cm->getFont().bounds.ll.y */, 0.);
+      pos.y - bounds.ll.y, 0.);
   resources.cm->draw(str);
 
   glPopMatrix();
@@ -194,6 +194,18 @@ Game::drawStats()
   drawRString("max size:", Point(anchor, urGeom.y - nmVSpace * num++));
   drawFWString(buf, Point(anchor - nmHSpace * len,
 	  urGeom.y - nmVSpace * num++));
+
+  // gameOver/paused
+  if(paused())
+  {
+    glColor4fv(resources.bar[0]);
+    drawRString("paused", Point(anchor, urGeom.y - nmVSpace * num++));
+  }
+  else if(state == gameOver)
+  {
+    glColor4fv(resources.bar[1]);
+    drawRString("game over", Point(anchor, urGeom.y - nmVSpace * num++));
+  }
 }
 
 
@@ -504,7 +516,22 @@ Game::display(const Time now)
 void
 Game::keyboard(const unsigned char key)
 {
-  if(state != playing)
+  // quit
+  if(key == 27 || key == 'q' || key == 'Q')
+  {
+    quit();
+    return;
+  }
+
+  // pause
+  if(state != gameOver && (key == 'p' || key == 'P'))
+  {
+    pause();
+    return;
+  }
+
+  // the following only works when actively playing
+  if(state != playing || paused())
     return;
 
   if(key == 8)
