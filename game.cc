@@ -207,8 +207,18 @@ Game::initGame()
 {
   // basic animation data
   state = playing;
-  frame.begin = now;
-  frame.end = now + avgTime;
+
+  if(lastResult && data.mode == GameData::hard && stack.size() < oldSize)
+  {
+    // only continue when an element was successfully removed
+    frame.end = now + lastRTime;
+    frame.begin = frame.end - avgTime;
+  }
+  else
+  {
+    frame.begin = now;
+    frame.end = now + avgTime;
+  }
 }
 
 
@@ -292,6 +302,7 @@ Game::timeOut()
 {
   // update stack
   lastResult = false;
+  lastRTime = 0.;
   oldSize = stack.size();
   stack.push_back(question);
   resetQuestion();
@@ -305,6 +316,7 @@ Game::submitAnswer()
   // check result
   int r = strtol(answer.c_str(), NULL, 10);
   lastResult = (r == question.r);
+  lastRTime = frame.end - now;
   oldSize = stack.size();
 
   if(lastResult)
@@ -314,7 +326,9 @@ Game::submitAnswer()
     data.update(question.kernel, question.errs, question.cum);
     updateAvg();
     
-    if(stack.size() && data.mode != GameData::veryHard)
+    if(stack.size() &&
+	(data.mode != GameData::hard || lastRTime > resources.minTime) &&
+	(data.mode != GameData::veryHard))
     {
       // recover and old question
       question = stack.back();
@@ -387,6 +401,7 @@ Game::Game(const Resources& resources, const Time now, GameData& data)
   playingTime = 0.;
   this->now = now;
   lastResult = false;
+  lastRTime = 0.;
   oldSize = -1;
   updateAvg();
   resetQuestion();

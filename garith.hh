@@ -32,6 +32,7 @@ struct Resources
   float minWidth;
   float videoRatio;
   Time animTime;
+  Time minTime;
 
   // colors
   Color foreground;

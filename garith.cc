@@ -197,6 +197,7 @@ main(int argc, char* argv[])
   resources.minWidth = 0.2;
   resources.videoRatio = 0.777;
   resources.animTime = 1.;
+  resources.minTime = 0.5;
   resources.foreground.set(1., 1., 1.);
   resources.background.set(0., 0., 0.);
   resources.normal.set    (0., 1., .5);
@@ -206,7 +207,7 @@ main(int argc, char* argv[])
   resources.bar[1].set    (1., 0., 0.);
 
   // initialize game data
-  data.mode = GameData::normal;
+  data.mode = GameData::hard;
   data.stackSize = 20;
   data.errorPenality = 5;
   data.timePenality = 1;

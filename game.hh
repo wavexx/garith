@@ -52,6 +52,7 @@ class Game: public State
   Question question;
   Question lastQuestion;
   bool lastResult;
+  Time lastRTime;
   std::string answer;
   int oldSize;
 
