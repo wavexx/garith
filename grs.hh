@@ -33,6 +33,36 @@ struct Bounds
 
 
 /*
+ * Color definitions
+ */
+
+struct Color
+{
+  Color(float r = 0., float g = 0., float b = 0., float a = 0.)
+  {
+    set(r, g, b, a);
+  }
+
+  float rgba[4];
+
+  void
+  set(float r = 0., float g = 0., float b = 0., float a = 0.)
+  {
+    rgba[0] = r;
+    rgba[1] = g;
+    rgba[2] = b;
+    rgba[3] = a;
+  }
+
+  operator float*()
+  {
+    return rgba;
+  }
+};
+
+
+
+/*
  * Utility functions
  */
 
