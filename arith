@@ -1,0 +1,334 @@
+#!/usr/freeware/bin/perl
+use strict;
+use Getopt::Std qw{getopts};
+require Data::Dumper;
+
+# general data
+my %NOW		= now();
+my $DIR		= "$ENV{HOME}/.arith";
+my $YMD		= sprintf("%04d%02d%02d", $NOW{y}, $NOW{m}, $NOW{d});
+my $LOG		= "$DIR/$YMD";
+my $DATA	= "$DIR/data";
+
+# defaults
+my $OPS = "+-**//";	# default operators/precedence
+my $MIN = 30;		# minimal execution time
+my $ERRPEN = 5;		# error penality
+my $TMPEN = 1;		# slow answer penality
+my $CRT = -1;		# correct answer balance
+
+# global error/data tables
+my %TABLES;
+my %STATS;
+
+
+sub now()
+{
+  my $ts = time();
+  my ($sec , $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) =
+      localtime($ts);
+
+  return (ts => $ts, ss => $sec, mm => $min, hh => $hour,
+	  d => $mday, m => $mon + 1, y => $year + 1900);
+}
+
+sub writeLog($$$$)
+{
+  my ($op, $data, $sec, $errs) = @_;
+
+  mkdir($DIR, 0700) unless(-d $DIR);
+  open(FD, ">>$LOG") or die;
+  printf(FD "%d\t%s\t%s\t%f\t%d\n", time(), $op, $data, $sec, $errs);
+  close(FD);
+}
+
+sub genTbl1($$)
+{
+  my ($from, $to) = @_;
+  my %buf;
+
+  for($from ... $to) {
+    $buf{$_} = 0;
+  }
+
+  return \%buf;
+}
+
+sub genTbl2($$)
+{
+  my ($from, $to) = @_;
+  my %buf;
+
+  for my $a($from ... $to)
+  {
+    my %buf2;
+
+    for my $b($from ... $to) {
+      $buf2{$b} = 0;
+    }
+
+    $buf{$a} = \%buf2;
+  }
+
+  return \%buf;
+}
+
+sub genStats()
+{
+  return {tot => 0, num => 0};
+}
+
+sub updTMPen($$)
+{
+  my ($data, $tm) = @_;
+  my $avg = ($data->{tot} += $tm) / ++$data->{num};
+  return int($tm / $avg);
+}
+
+sub chooseK($)
+{
+  my $data = shift;
+
+  # fetch the baseline
+  my $base;
+  foreach(@$data)
+  {
+    my $n = $_->[1];
+    $base = $n if(!defined($base) || ($n < $base));
+  }
+
+  # max score extent
+  my $max = 0;
+  foreach(@$data) {
+    $max += $_->[1] - $base + 1;
+  }
+
+  # pick a random number
+  my $rnd = int(rand($max));
+
+  my $cur = 0;
+  foreach(@$data)
+  {
+    $cur += $_->[1] - $base + 1;
+    return $_->[0] if($cur >= $rnd);
+  }
+}
+
+sub choose1($)
+{
+  my $buf = shift;
+
+  # first flatten all values
+  my @data;
+  while(my ($n, $b) = each(%$buf)) {
+    push(@data, [$n, $b]);
+  }
+
+  # call the kernel fn
+  return chooseK(\@data);
+}
+
+sub choose2($)
+{
+  my $buf = shift;
+
+  # first flatten all values
+  my @data;
+  while(my ($a, $r) = each(%$buf))
+  {
+    while(my ($b, $n) = each(%$r)) {
+      push(@data, [[$a, $b], $n]);
+    }
+  }
+
+  # call the kernel fn
+  my $ret = chooseK(\@data);
+  return ($ret->[0], $ret->[1]);
+}
+
+sub runOpStd($)
+{
+  my $op = shift;
+  my $kt = $TABLES{$op} || ($TABLES{$op} = genTbl2(2, 9));
+  my $st = $STATS{$op} || ($STATS{$op} = genStats());
+  my ($a, $b) = my ($ra, $rb) = choose2($kt);
+  my $r;
+
+  # determine ra/rb/r
+  if($op eq '+') {
+    $r = $a + $b;
+  }
+  elsif($op eq '*') {
+    $r = $a * $b;
+  }
+  elsif($op eq '-')
+  {
+    $ra = $a + $b;
+    $r = $ra - $b;
+  }
+  else
+  {
+    $ra = $a * $b;
+    $r = $ra / $b;
+  }
+
+  my $errs = 0;
+  my $start;
+
+  for(;; ++$errs)
+  {
+    $start = getMMS();
+    print("$ra $op $rb = ");
+    
+    my $ans = <STDIN>;
+    if($ans == $r) {
+      last;
+    } else {
+      print("WRONG!!!\n");
+    }
+  }
+
+  # compensate for slow responses
+  my $tmn = updTMPen($st, (getMMS() - $start));
+  if($tmn) {
+    $kt->{$a}->{$b} += $TMPEN * $tmn;
+  }
+
+  # error compensation
+  if($errs) {
+    $kt->{$a}->{$b} += $ERRPEN * $errs;
+  } else {
+    $kt->{$a}->{$b} += $CRT;
+  }
+
+  return ("$ra $rb", $errs);
+}
+
+sub scramble(@)
+{
+  my @source = @_;
+  my @dest;
+  my @buf;
+
+  foreach(@source) {
+    push(@buf, [$_, rand()]);
+  }
+
+  foreach(sort {$a->[1] <=> $b->[1]} @buf) {
+    push(@dest, $_->[0]);
+  }
+
+  return @dest;
+}
+
+sub runOpMT()
+{
+  my $kt = $TABLES{'mt'} || ($TABLES{'mt'} = genTbl1(2, 9));
+  my $st = $STATS{'mt'} || ($STATS{'mt'} = genStats());
+  my $n = choose1($kt);
+
+  print("m/t for $n:\n");
+
+  my $errs = 0;
+  my $start = getMMS();
+
+  # scramble the sequence to avoid linear memorization
+  for(scramble(2 ... 9))
+  {
+    for(;; ++$errs)
+    {
+      print(" $n * $_ = ");
+      my $ans = <STDIN>;
+      if($ans == ($n * $_)) {
+	last;
+      } else {
+	print("WRONG!!!\n");
+      }
+    }
+  }
+
+  # compensate for slow responses
+  my $tmn = updTMPen($st, (getMMS() - $start));
+  if($tmn) {
+    $kt->{$n} += $TMPEN * $tmn;
+  }
+
+  # error compensation
+  if($errs) {
+    $kt->{$n} += $ERRPEN * $errs;
+  } else {
+    $kt->{$n} += $CRT;
+  }
+
+  return ($n, $errs);
+}
+
+sub runOp($)
+{
+  my $op = shift;
+  return (lc($op) eq 't'? runOpMT(): runOpStd($op));
+}
+
+sub getMMS()
+{
+  # tuned for SYSV gettimeofday
+  my $data = pack("LL", ());
+  (syscall(1128, $data, 0) != -1) or die;
+  my ($sec, $mms) = unpack("LL", $data);
+  return ($sec + $mms / 1000000);
+}
+
+sub load()
+{
+  # load tables
+  if(-r $DATA)
+  {
+    open(FD, "<$DATA") or die;
+    eval(<FD>);
+    close(FD);
+  }
+}
+
+sub save()
+{
+  open(FD, ">$DATA") or die;
+  $Data::Dumper::Indent = 0;
+  print(FD Data::Dumper->Dump([\%TABLES, \%STATS], ["*TABLES", "*STATS"]));
+  print(FD "\n");
+  close(FD);
+}
+
+sub end()
+{
+  save();
+  exit(0);
+}
+
+sub main()
+{
+  my %flags;
+  getopts("o:m:n:", \%flags) or exit(2);
+  my $ops = ($flags{o} || $OPS);
+  my $num = ($flags{n} || 0);
+  my $min = (defined($flags{m})? $flags{m}: ($num? 0: $MIN));
+  load();
+
+  # save scores on interrupt, but only when running undefinitely
+  if(!$min) {
+    $SIG{INT} = \&end;
+  }
+
+  do
+  {
+    my $start = getMMS();
+    my $op = substr($ops, rand(length($ops)), 1);
+    my ($data, $errs) = runOp($op);
+    my $tm = (getMMS() - $start);
+    writeLog($op, $data, (getMMS() - $start), $errs);
+  }
+  while(--$num && (!$min || (time() - $NOW{ts}) < $min));
+  
+  end();
+}
+
+main();
