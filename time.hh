@@ -8,7 +8,6 @@
 
 // c system headers
 #include <time.h>
-#include <cmath>
 
 
 /*
@@ -83,29 +82,6 @@ now()
   clock_gettime(CLOCK_REALTIME, &n);
   return (static_cast<Time>(n.tv_sec) +
       .000000001 * static_cast<Time>(n.tv_nsec));
-}
-
-
-
-/*
- * Interpolation kernels
- */
-
-inline double
-interpLinear(const TimeFrame& frame, const Time now)
-{
-  return
-    (now <= frame.begin? 0.:
-	(now >= frame.end? 1.:
-	    ((now - frame.begin) / (frame.end - frame.begin))));
-}
-
-
-inline double
-interpCubic(const TimeFrame& frame, const Time now, const double degree = 2.)
-{
-  double i = (interpLinear(frame, now) * 2);
-  return ((i < 1? std::pow(i, degree): (2. - std::pow(2. - i, degree))) / 2);
 }
 
 #endif
