@@ -3,8 +3,8 @@
  * Copyright(c) 2005 by wave++ "Yuri D'Elia" <wavexx@users.sf.net>
  */
 
-#ifndef operators_hh
-#define operators_hh
+#ifndef operations_hh
+#define operations_hh
 
 #include <stdexcept>
 

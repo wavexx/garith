@@ -361,7 +361,15 @@ Game::contGame()
 void
 Game::stopGame()
 {
+  // change the state
   state = gameOver;
+
+  // commit errors on the stack
+  for(QDeque::const_iterator it = stack.begin(); it != stack.end(); ++it)
+  {
+    if(it->errs)
+      data.update(it->kernel, it->errs, it->cum);
+  }
 }
 
 
@@ -519,6 +527,7 @@ Game::keyboard(const unsigned char key)
   // quit
   if(key == 27 || key == 'q' || key == 'Q')
   {
+    stopGame();
     quit();
     return;
   }
