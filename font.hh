@@ -77,6 +77,9 @@ public:
 
   void
   bounds(Bounds& bounds, const char* str);
+
+  void
+  maxOf(Bounds& bounds, const char* str);
 };
 
 

@@ -81,6 +81,40 @@ CharMap::bounds(Bounds& bounds, const char* str)
 }
 
 
+void
+CharMap::maxOf(Bounds& bounds, const char* str)
+{
+  // side cases
+  if(!*str)
+  {
+    bounds.ll.x = bounds.ll.y = 0;
+    bounds.ur = bounds.ll;
+    return;
+  }
+  
+  // initial bounds
+  int idx = c2i(*str);
+  bounds = refs[idx]->metrics.bounds;
+  
+  for(++str; *str; ++str)
+  {
+    idx = c2i(*str);
+    
+    const Bounds& cur = refs[idx]->metrics.bounds;
+    
+    // increase bounds
+    if(cur.ll.x < bounds.ll.x)
+      bounds.ll.x = cur.ll.x;
+    if(cur.ur.x > bounds.ur.x)
+      bounds.ur.x = cur.ur.x;
+    if(cur.ll.y < bounds.ll.y)
+      bounds.ll.y = cur.ll.y;
+    if(cur.ur.y > bounds.ur.y)
+      bounds.ur.y = cur.ur.y;
+  }
+}
+
+
 
 /*
  * Utility functions implementation
