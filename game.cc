@@ -270,7 +270,7 @@ Game::initGame()
   // basic animation data
   state = playing;
 
-  if(lastResult && data.mode == GameData::hard &&
+  if(lastResult && data.mode == GameData::medium &&
       static_cast<int>(stack.size()) < oldSize)
   {
     // only continue when an element was successfully removed
@@ -407,8 +407,8 @@ Game::submitAnswer()
     updateAvg();
     
     if(stack.size() &&
-	(data.mode != GameData::hard || lastRTime > resources.minTime) &&
-	(data.mode != GameData::veryHard))
+	(data.mode != GameData::medium || lastRTime > resources.minTime) &&
+	(data.mode != GameData::hard))
     {
       // recover and old question
       question = stack.back();
@@ -436,8 +436,8 @@ Game::NrPred::operator()(const Kernel& kernel) const
   if(ref.data.ops.find(kernel.o) == ref.data.ops.end())
     return false;
 
-  // when in veryHard and/or limit conditions the stack is ignored
-  if(ref.data.mode == GameData::veryHard ||
+  // when in hard and/or limit conditions the stack is ignored
+  if(ref.data.mode == GameData::hard ||
       ref.stack.size() >= ref.data.kernels.size())
     return true;
 
