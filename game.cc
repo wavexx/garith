@@ -349,8 +349,11 @@ Game::contGame()
   {
     // update statistics
     ++questions;
-    if(maxSize < static_cast<int>(stack.size()))
-      maxSize = stack.size();
+
+    // only update on success. this could be used for calculating correctly
+    // a better score in the future.
+    if(static_cast<int>(stack.size()) <= oldSize && oldSize > maxSize)
+      maxSize = oldSize;
 
     // continue
     answer.clear();
