@@ -151,10 +151,11 @@ sub runOpStd($)
   my $op = shift;
   my $kt = $TABLES{$op} || ($TABLES{$op} = genTbl2(2, 9));
   my $st = $STATS{$op} || ($STATS{$op} = genStats());
-  my ($a, $b) = my ($ra, $rb) = choose2($kt);
+  my ($a, $b) = choose2($kt);
+  my $na = $a;
   my $r;
 
-  # determine ra/rb/r
+  # determine na/r
   if($op eq '+') {
     $r = $a + $b;
   }
@@ -163,13 +164,13 @@ sub runOpStd($)
   }
   elsif($op eq '-')
   {
-    $ra = $a + $b;
-    $r = $ra - $b;
+    $na = $a + $b;
+    $r = $na - $b;
   }
   else
   {
-    $ra = $a * $b;
-    $r = $ra / $b;
+    $na = $a * $b;
+    $r = $na / $b;
   }
 
   my $errs = 0;
@@ -178,7 +179,7 @@ sub runOpStd($)
   for(;; ++$errs)
   {
     $start = getMMS();
-    print("$ra $op $rb = ");
+    print("$na $op $b = ");
     
     my $ans = <STDIN>;
     if($ans == $r) {
@@ -201,7 +202,7 @@ sub runOpStd($)
     $kt->{$a}->{$b} += $CRT;
   }
 
-  return ("$ra $rb", $errs);
+  return ("$a $b", $errs);
 }
 
 sub scramble(@)

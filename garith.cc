@@ -14,6 +14,7 @@ using std::make_pair;
 
 #include <fstream>
 using std::ifstream;
+using std::ofstream;
 
 #include <iostream>
 using std::cerr;
@@ -23,6 +24,7 @@ using std::cout;
 using std::runtime_error;
 
 #include <GL/freeglut.h>
+#include <unistd.h>
 
 
 /*
@@ -65,7 +67,7 @@ fileNameExpand(const char* file, const char* prefix = NULL)
   if(file[0] == '~')
     return string(getenv("HOME")) + (file + 1);
   else if(file[0] != '/')
-    return string(prefix) + file;
+    return fileNameExpand(prefix, NULL) + file;
 
   return file;
 }
@@ -83,6 +85,7 @@ namespace
   Time off = 0.;
   bool paused = false;
   State* state;
+  ofstream stream;
 }
 
 
@@ -171,6 +174,14 @@ GameData::update(KernMap::iterator kit, int errs, Time time)
   }
   else
     kit->second += balance;
+
+  // write into the log
+  if(stream.is_open())
+  {
+    stream << ::time(NULL) << "\t" << kit->first.o->sym() << "\t" <<
+      kit->first.a << " " << kit->first.b << "\t" <<
+      time << "\t" << errs << std::endl;
+  }
 }
 
 
@@ -206,7 +217,7 @@ main(int argc, char* argv[])
   resources.bar[1].set    (1., 0., 0.);
 
   // initialize game data
-  data.mode = GameData::veryHard;
+  data.mode = static_cast<GameData::mode_t>(atoi(argv[2])); //GameData::practice;
   data.stackSize = 20;
   data.errorPenality = 5;
   data.timePenality = 1;
@@ -236,9 +247,16 @@ main(int argc, char* argv[])
   glClearColor(resources.background[0], resources.background[1],
       resources.background[2], resources.background[3]);
 
+  // open the log
+  char date[16];
+  time_t time = ::time(NULL);
+  strftime(date, sizeof(date), "%Y%m%d", localtime(&time));
+  string fileName = fileNameExpand(date, "~/.arith/");
+  stream.open(fileName.c_str(), std::ios_base::out | std::ios_base::app);
+
   // main loop
   off = now();
-  srand48(time(NULL));
+  srand48(time);
   state = new Game(resources, 0., data);
   glutMainLoop();
   return EXIT_SUCCESS;
