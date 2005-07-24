@@ -179,7 +179,7 @@ GameData::update(KernMap::iterator kit, int errs, Time time)
   // write into the log
   if(stream.is_open())
   {
-    stream << ::time(NULL) << "\t" << kit->first.o->sym() << "\t" <<
+    stream << ::time(NULL) << "\t" << kit->first.o->cSym() << "\t" <<
       kit->first.a << " " << kit->first.b << "\t" <<
       time << "\t" << errs << std::endl;
   }
@@ -225,7 +225,7 @@ main(int argc, char* argv[])
   data.balance = -1;
 
   // setup operators
-  for(const char* sym = (argc > 3? argv[3]: "+-*/"); *sym; ++sym)
+  for(const char* sym = (argc > 3? argv[3]: "+-*/:"); *sym; ++sym)
   {
     Operation* op = opFromSym(*sym);
     data.times.insert(make_pair(op,

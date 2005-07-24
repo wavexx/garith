@@ -7,6 +7,7 @@
 #define operations_hh
 
 #include <stdexcept>
+#include <cstdlib>
 
 
 /*
@@ -21,10 +22,16 @@ public:
   virtual OpSym sym() const = 0;
   virtual int result(const int a, const int b, int& na) const = 0;
 
+  virtual OpSym
+  cSym() const
+  {
+    return sym();
+  }
+
   bool
   operator<(const Operation& r) const
   {
-    return (sym() < r.sym());
+    return (cSym() < r.cSym());
   }
 };
 
@@ -124,6 +131,28 @@ public:
 };
 
 
+class ImpDivision: public Operation
+{
+public:
+  OpSym sym() const
+  {
+    return '/';
+  }
+
+  OpSym cSym() const
+  {
+    return ':';
+  }
+
+  int
+  result(const int a, const int b, int& na) const
+  {
+    na = a * b + static_cast<int>(drand48() * (b - 2) + 1);
+    return (na / b);
+  }
+};
+
+
 /*
  * Utility functions
  */
@@ -137,6 +166,7 @@ opFromSym(const OpSym sym)
   case '-': return new Subtraction();
   case '*': return new Multiplication();
   case '/': return new Division();
+  case ':': return new ImpDivision();
   }
 
   throw std::runtime_error("unknown operation symbol");
