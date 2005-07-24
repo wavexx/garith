@@ -547,7 +547,7 @@ Game::keyboard(const unsigned char key)
   if(state != playing || paused())
     return;
 
-  if(key == 8)
+  if(key == 8 || key == 127)
   {
     // backspace
     if(answer.size())
