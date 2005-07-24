@@ -78,10 +78,10 @@ public:
 inline Time
 now()
 {
-  timespec n;
-  clock_gettime(CLOCK_REALTIME, &n);
+  timeval n;
+  gettimeofday(&n, NULL);
   return (static_cast<Time>(n.tv_sec) +
-      .000000001 * static_cast<Time>(n.tv_nsec));
+      .000001 * static_cast<Time>(n.tv_usec));
 }
 
 #endif

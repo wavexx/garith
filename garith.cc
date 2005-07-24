@@ -24,7 +24,7 @@ using std::cout;
 #include <stdexcept>
 using std::runtime_error;
 
-#include <GL/freeglut.h>
+#include <GLUT/glut.h>
 #include <unistd.h>
 
 
@@ -152,7 +152,7 @@ State::paused()
 void
 State::quit()
 {
-  glutLeaveMainLoop();
+  exit(EXIT_SUCCESS);
 }
 
 
@@ -205,8 +205,8 @@ main(int argc, char* argv[])
   // initialize default resources
   loadFontAF(resources.font, argv[1]);
   resources.cm = new GCharMap(resources.font);
-  resources.minWidth = 0.2;
-  resources.videoRatio = 0.777;
+  resources.minWidth = 0.5;
+  resources.videoRatio = 1.;
   resources.animTime = 1.;
   resources.minTime = 0.5;
   resources.foreground.set(1., 1., 1.);

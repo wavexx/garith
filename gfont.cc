@@ -7,7 +7,7 @@
 #include "gfont.hh"
 using std::vector;
 
-#include <GL/glu.h>
+#include <OpenGL/glu.h>
 
 
 /*
@@ -19,11 +19,11 @@ renderCharFilled(const Char& c)
 {
   GLUtesselator* tess(gluNewTess());
   gluTessCallback(tess, GLU_TESS_BEGIN,
-      reinterpret_cast<void (*)()>(glBegin));
+      reinterpret_cast<void (*)(...)>(glBegin));
   gluTessCallback(tess, GLU_TESS_VERTEX,
-      reinterpret_cast<void (*)()>(glVertex2fv));
+      reinterpret_cast<void (*)(...)>(glVertex2fv));
   gluTessCallback(tess, GLU_TESS_END,
-      reinterpret_cast<void (*)()>(glEnd));
+      reinterpret_cast<void (*)(...)>(glEnd));
   gluTessBeginPolygon(tess, NULL);
 
   for(vector<Outline>::const_iterator it = c.outlines.begin();

@@ -7,7 +7,7 @@
 #define gfont_hh
 
 #include "font.hh"
-#include <GL/gl.h>
+#include <OpenGL/gl.h>
 
 
 /*

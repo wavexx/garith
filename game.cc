@@ -17,7 +17,7 @@ using std::max;
 #include <cstdlib>
 using std::sprintf;
 
-#include <GL/freeglut.h>
+#include <GLUT/glut.h>
 
 
 /*

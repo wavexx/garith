@@ -1,10 +1,9 @@
 # standard config
-CPPFLAGS = -MDupdate Makedepend -I/usr/freeware/include -I/usr/local/include
-LDFLAGS = -FE:template_in_elf_section -quiet_prelink
-GLUT_LDADD = -L/usr/freeware/lib32 -L/usr/local/lib32 -lm -lglut -lGL -lGLU -lX11
+CPPFLAGS = -MD
+GLUT_LDADD = -framework GLUT -framework OpenGL
 
 # targets
-TARGETS = f2f garith
+TARGETS = garith # f2f
 
 F2F_OBJECTS = f2f.o
 F2F_LDADD = -lufm
@@ -24,7 +23,7 @@ GARITH_LDADD = $(GLUT_LDADD)
 all: $(TARGETS)
 
 clean:
-	rm -rf $(TARGETS) ii_files core *.o ~* \#*
+	rm -rf $(TARGETS) ii_files core *.o *.d ~* \#*
 
 garith: $(GARITH_OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $(GARITH_OBJECTS) $(GARITH_LDADD)
@@ -36,4 +35,4 @@ f2f: $(F2F_OBJECTS)
 # stubs
 .PHONY: all clean
 
-sinclude Makedepend
+sinclude *.d
