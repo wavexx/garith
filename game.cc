@@ -40,7 +40,7 @@ Game::drawFWString(const char* str, const Point& pos)
     glTranslatef(
 	(nmHSpace * c) + (nmHSpace - (cur.ur.x - cur.ll.x)) / 2 - cur.ll.x,
 	(nmVSpace - (cur.ur.y - cur.ll.y)) / 2 - cur.ll.y, 0.);
-    
+
     resources.cm->draw(*str);
     glPopMatrix();
   }
@@ -188,7 +188,7 @@ Game::drawStats()
   drawRString("questions:", Point(anchor, urGeom.y - nmVSpace * num++));
   drawFWString(buf, Point(anchor - nmHSpace * len,
 	  urGeom.y - nmVSpace * num++));
-  
+
   // max size
   len = sprintf(buf, "%d", maxSize) - 1;
   drawRString("max size:", Point(anchor, urGeom.y - nmVSpace * num++));
@@ -226,11 +226,7 @@ Game::updateAvg()
   // time averages
   AvgTime res;
   for(TimeMap::iterator it = data.times.begin(); it != data.times.end(); ++it)
-  {
-    // only for the active operators
-    if(data.ops.find(it->first) != data.ops.end())
-      res.add(it->second.avg());
-  }
+    res.add(it->second.avg());
   avgTime = res.avg();
 }
 
@@ -405,7 +401,7 @@ Game::submitAnswer()
     lastQuestion = question;
     data.update(question.kernel, question.errs, question.cum);
     updateAvg();
-    
+
     if(stack.size() &&
 	(data.mode != GameData::medium || lastRTime > resources.minTime) &&
 	(data.mode != GameData::hard))
@@ -432,10 +428,6 @@ Game::submitAnswer()
 bool
 Game::NrPred::operator()(const Kernel& kernel) const
 {
-  // exclude disabled operations
-  if(ref.data.ops.find(kernel.o) == ref.data.ops.end())
-    return false;
-
   // when in hard and/or limit conditions the stack is ignored
   if(ref.data.mode == GameData::hard ||
       ref.stack.size() >= ref.data.kernels.size())
@@ -466,10 +458,6 @@ Game::Game(const Resources& resources, const Time now, GameData& data)
   for(KernMap::iterator it = data.kernels.begin();
       it != data.kernels.end(); ++it)
   {
-    // only consider active operations
-    if(data.ops.find(it->first.o) == data.ops.end())
-      continue;
-
     int na;
     char buf[sizeof(int) * 4];
     int r = it->first.o->result(it->first.a, it->first.b, na);
