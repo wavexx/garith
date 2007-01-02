@@ -25,6 +25,7 @@ using std::cout;
 using std::runtime_error;
 
 #include <GLUT/glut.h>
+#include <stdio.h>
 #include <unistd.h>
 
 
@@ -74,6 +75,42 @@ fileNameExpand(const char* file, const char* prefix = NULL)
 }
 
 
+bool
+loadKernels(KernMap& data, const char* file)
+{
+  ifstream fd(file);
+  if(!fd) return true;
+
+  string line;
+  while(std::getline(fd, line))
+  {
+    Kernel k;
+    char sym;
+    int p;
+    sscanf(line.c_str(), "%d %c %d %d\n", &k.a, &sym, &k.b, &p);
+    k.o = opFromSym(sym);
+    data.insert(make_pair(k, p));
+  }
+
+  return false;
+}
+
+
+void
+saveKernels(const char* file, const KernMap& data)
+{
+  ofstream fd(file);
+  if(!fd) throw runtime_error(string("cannot open ") + file);
+
+  for(KernMap::const_iterator it = data.begin(); it != data.end(); ++it)
+  {
+    fd << it->first.a << " " << it->first.o->cSym() << " "
+       << it->first.b << " " << it->second << std::endl;
+  }
+}
+
+
+
 /*
  * GLUT handlers
  */
@@ -87,6 +124,9 @@ namespace
   bool paused = false;
   State* state;
   ofstream stream;
+
+  const char* savedKernelsFile;
+  KernMap savedKernels;
 }
 
 
@@ -152,6 +192,18 @@ State::paused()
 void
 State::quit()
 {
+  // merge new deviations with existing data
+  for(KernMap::const_iterator it = ::data.kernels.begin();
+      it != ::data.kernels.end(); ++it)
+  {
+    KernMap::iterator old = savedKernels.find(it->first);
+    if(old == savedKernels.end())
+      savedKernels.insert(*it);
+    else
+      old->second = it->second;
+  }
+
+  saveKernels(savedKernelsFile, savedKernels);
   exit(EXIT_SUCCESS);
 }
 
@@ -202,8 +254,21 @@ main(int argc, char* argv[])
   glutIdleFunc(glutPostRedisplay);
   glutKeyboardFunc(keyboard);
 
+  // TODO: fix argument parsing
+  if(argc < 2 || argc > 4)
+  {
+    cerr << argv[0] << " mode [operators]\n"
+	 << "  mode: -1: about; 0: practice; 1: normal; 2: medium; 3: hard\n"
+	 << "  ops:  \"+-*/:\" (default: \"+-*/\")\n";
+    return EXIT_FAILURE;
+  }
+
+  const char* font = "font.af";
+  const GameData::mode_t mode = static_cast<GameData::mode_t>(atoi(argv[1]));
+  const char* syms = (argc > 2? argv[2]: "+-*/");
+
   // initialize default resources
-  loadFontAF(resources.font, argv[1]);
+  loadFontAF(resources.font, font);
   resources.cm = new GCharMap(resources.font);
   resources.minWidth = 0.5;
   resources.videoRatio = 1.;
@@ -211,21 +276,24 @@ main(int argc, char* argv[])
   resources.minTime = 0.5;
   resources.foreground.set(1., 1., 1.);
   resources.background.set(0., 0., 0.);
-  resources.normal.set    (0., 1., .5);
-  resources.timeout.set   (0., .5, 1.);
-  resources.error.set     (1., .5, 1.);
-  resources.bar[0].set    (1., .5, 0.);
-  resources.bar[1].set    (1., 0., 0.);
+  resources.normal.set(0., 1., .5);
+  resources.timeout.set(0., .5, 1.);
+  resources.error.set(1., .5, 1.);
+  resources.bar[0].set(1., .5, 0.);
+  resources.bar[1].set(1., 0., 0.);
 
   // initialize game data
-  data.mode = static_cast<GameData::mode_t>(atoi(argv[2]));
+  data.mode = mode;
   data.stackSize = 20;
   data.errorPenality = 5;
   data.timePenality = 1;
   data.balance = -1;
 
   // setup operators
-  for(const char* sym = (argc > 3? argv[3]: "+-*/:"); *sym; ++sym)
+  savedKernelsFile = strdup(fileNameExpand("kernels", "~/.arith/").c_str());
+  loadKernels(savedKernels, savedKernelsFile);
+
+  for(const char* sym = syms; *sym; ++sym)
   {
     Operation* op = opFromSym(*sym);
     data.times.insert(make_pair(op,
@@ -236,7 +304,13 @@ main(int argc, char* argv[])
       for(int b = 2; b != 10; ++b)
       {
 	Kernel buf = {a, op, b};
-	data.kernels.insert(make_pair(buf, 0));
+
+	int p = 0;
+	KernMap::const_iterator old = savedKernels.find(buf);
+	if(old != savedKernels.end())
+	  p = old->second;
+
+	data.kernels.insert(make_pair(buf, p));
       }
   }
 
