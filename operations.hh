@@ -29,11 +29,23 @@ public:
   }
 
   bool
-  operator<(const Operation& r) const
+  operator==(const Operation& r) const
   {
-    return (cSym() < r.cSym());
+    return (cSym() == r.cSym());
+  }
+
+  bool
+  operator!=(const Operation& r) const
+  {
+    return (cSym() != r.cSym());
   }
 };
+
+inline bool
+operator<(const Operation& l, const Operation& r)
+{
+  return (l.cSym() < r.cSym());
+}
 
 
 struct Kernel
@@ -47,15 +59,17 @@ struct Kernel
   bool
   operator==(const Kernel& r) const
   {
-    return (a == r.a && o == r.o && b == r.b);
-  }
-  
-  bool
-  operator<(const Kernel& r) const
-  {
-    return (a < r.a || *o < *r.o || b < r.b);
+    return (a == r.a && *o == *r.o && b == r.b);
   }
 };
+
+inline bool
+operator<(const Kernel& l, const Kernel& r)
+{
+  if(l.a != r.a) return (l.a < r.a);
+  if(*l.o != *r.o) return (*l.o < *r.o);
+  return (l.b < r.b);
+}
 
 
 
