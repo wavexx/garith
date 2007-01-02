@@ -110,6 +110,39 @@ saveKernels(const char* file, const KernMap& data)
 }
 
 
+bool
+loadTimes(TimeMap& data, const char* file)
+{
+  ifstream fd(file);
+  if(!fd) return true;
+
+  string line;
+  while(std::getline(fd, line))
+  {
+    AvgTime avg;
+    char sym;
+    sscanf(line.c_str(), "%c %lf %lu\n", &sym, &avg.cum, &avg.num);
+    data.insert(make_pair(opFromSym(sym), avg));
+  }
+
+  return false;
+}
+
+
+void
+saveTimes(const char* file, const TimeMap& data)
+{
+  ofstream fd(file);
+  if(!fd) throw runtime_error(string("cannot open ") + file);
+
+  for(TimeMap::const_iterator it = data.begin(); it != data.end(); ++it)
+  {
+    fd << it->first->cSym() << " " << it->second.cum << " "
+       << it->second.num << std::endl;
+  }
+}
+
+
 
 /*
  * GLUT handlers
@@ -127,6 +160,8 @@ namespace
 
   const char* savedKernelsFile;
   KernMap savedKernels;
+  const char* savedTimesFile;
+  TimeMap savedTimes;
 }
 
 
@@ -202,8 +237,22 @@ State::quit()
     else
       old->second = it->second;
   }
-
   saveKernels(savedKernelsFile, savedKernels);
+
+  for(TimeMap::const_iterator it = ::data.times.begin();
+      it != ::data.times.end(); ++it)
+  {
+    TimeMap::iterator old = savedTimes.begin();
+    for(; old != savedTimes.end(); ++old)
+      if(*old->first == *it->first)
+	break;
+    if(old == savedTimes.end())
+      savedTimes.insert(*it);
+    else
+      old->second = it->second;
+  }
+  saveTimes(savedTimesFile, savedTimes);
+
   exit(EXIT_SUCCESS);
 }
 
@@ -292,12 +341,27 @@ main(int argc, char* argv[])
   // setup operators
   savedKernelsFile = strdup(fileNameExpand("kernels", "~/.arith/").c_str());
   loadKernels(savedKernels, savedKernelsFile);
+  savedTimesFile = strdup(fileNameExpand("times", "~/.arith/").c_str());
+  loadTimes(savedTimes, savedTimesFile);
 
   for(const char* sym = syms; *sym; ++sym)
   {
     Operation* op = opFromSym(*sym);
-    data.times.insert(make_pair(op,
-	    AvgTime(20. * data.stackSize, data.stackSize)));
+
+    AvgTime avg;
+    TimeMap::iterator old = savedTimes.begin();
+    for(; old != savedTimes.end(); ++old)
+      if(*old->first == *op)
+	break;
+    if(old != savedTimes.end())
+      avg = old->second;
+    else
+    {
+      avg.cum = 20 * data.stackSize;
+      avg.num = data.stackSize;
+    }
+
+    data.times.insert(make_pair(op, avg));
     data.ops.insert(op);
 
     for(int a = 2; a != 10; ++a)
