@@ -1,6 +1,6 @@
 /*
  * garith: the game of arithmetic - game control
- * Copyright(c) 2005 by wave++ "Yuri D'Elia" <wavexx@users.sf.net>
+ * Copyright(c) 2005 by wave++ "Yuri D'Elia" <wavexx@thregr.org>
  */
 
 #ifndef garith_hh
