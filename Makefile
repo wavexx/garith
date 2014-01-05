@@ -1,6 +1,17 @@
+## Makefile for garith
+## Copyright(c) 2005-2014 by wave++ "Yuri D'Elia" <wavexx@thregr.org>
+## Distributed under GNU LGPL WITHOUT ANY WARRANTY.
+
 # standard config
-CPPFLAGS = -MD
-GLUT_LDADD = -framework GLUT -framework OpenGL
+ifeq ($(shell uname), Darwin)
+# OS X
+CPPFLAGS += -MD
+GLUT_LDADD := -framework GLUT -framework OpenGL
+else
+# classic posix
+CPPFLAGS += -MD
+GLUT_LDADD := -lglut -lGL -lGLU
+endif
 
 # targets
 TARGETS = garith # f2f

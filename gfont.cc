@@ -1,13 +1,11 @@
 /*
  * gfont: graphical font rendition - implementation
- * Copyright(c) 2005 by wave++ "Yuri D'Elia" <wavexx@thregr.org>
+ * Copyright(c) 2005-2014 by wave++ "Yuri D'Elia" <wavexx@thregr.org>
  */
 
 // Interface and headers
 #include "gfont.hh"
 using std::vector;
-
-#include <OpenGL/glu.h>
 
 
 /*
@@ -19,11 +17,11 @@ renderCharFilled(const Char& c)
 {
   GLUtesselator* tess(gluNewTess());
   gluTessCallback(tess, GLU_TESS_BEGIN,
-      reinterpret_cast<void (*)(...)>(glBegin));
+      reinterpret_cast<GLvoid (*)()>(glBegin));
   gluTessCallback(tess, GLU_TESS_VERTEX,
-      reinterpret_cast<void (*)(...)>(glVertex2fv));
+      reinterpret_cast<GLvoid (*)()>(glVertex2fv));
   gluTessCallback(tess, GLU_TESS_END,
-      reinterpret_cast<void (*)(...)>(glEnd));
+      reinterpret_cast<GLvoid (*)()>(glEnd));
   gluTessBeginPolygon(tess, NULL);
 
   for(vector<Outline>::const_iterator it = c.outlines.begin();

@@ -1,6 +1,6 @@
 /*
  * font: base font - implementation
- * Copyright(c) 2005 by wave++ "Yuri D'Elia" <wavexx@thregr.org>
+ * Copyright(c) 2005-2014 by wave++ "Yuri D'Elia" <wavexx@thregr.org>
  */
 
 // Interface and headers
@@ -15,6 +15,9 @@ using std::string;
 
 #include <stdexcept>
 using std::runtime_error;
+
+// c system headers
+#include <string.h>
 
 
 /*

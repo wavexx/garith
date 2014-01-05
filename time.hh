@@ -1,13 +1,14 @@
 /*
  * time: time and timing utilities
- * Copyright(c) 2005 by wave++ "Yuri D'Elia" <wavexx@thregr.org>
+ * Copyright(c) 2005-2014 by wave++ "Yuri D'Elia" <wavexx@thregr.org>
  */
 
 #ifndef time_hh
 #define time_hh
 
 // c system headers
-#include <time.h>
+#include <stdlib.h>
+#include <sys/time.h>
 
 
 /*

@@ -1,6 +1,6 @@
 /*
  * font: base font - shared definitions
- * Copyright(c) 2005 by wave++ "Yuri D'Elia" <wavexx@thregr.org>
+ * Copyright(c) 2005-2014 by wave++ "Yuri D'Elia" <wavexx@thregr.org>
  */
 
 #ifndef font_hh
@@ -8,6 +8,7 @@
 
 #include "grs.hh"
 #include <vector>
+#include <stdlib.h>
 
 
 /*

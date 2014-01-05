@@ -1,12 +1,13 @@
 /*
  * game: the game of arithmetic - interactive gui - implementation
- * Copyright(c) 2005 by wave++ "Yuri D'Elia" <wavexx@thregr.org>
+ * Copyright(c) 2005-2014 by wave++ "Yuri D'Elia" <wavexx@thregr.org>
  */
 
 /*
  * Headers
  */
 
+#include "gl.hh"
 #include "game.hh"
 #include "interp.hh"
 using std::string;
@@ -14,10 +15,8 @@ using std::string;
 #include <algorithm>
 using std::max;
 
-#include <cstdlib>
-using std::sprintf;
-
-#include <GLUT/glut.h>
+// c system headers
+#include <stdio.h>
 
 
 /*

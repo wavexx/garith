@@ -1,13 +1,13 @@
 /*
  * gfont: graphical font rendition
- * Copyright(c) 2005 by wave++ "Yuri D'Elia" <wavexx@thregr.org>
+ * Copyright(c) 2005-2014 by wave++ "Yuri D'Elia" <wavexx@thregr.org>
  */
 
 #ifndef gfont_hh
 #define gfont_hh
 
 #include "font.hh"
-#include <OpenGL/gl.h>
+#include "gl.hh"
 
 
 /*
