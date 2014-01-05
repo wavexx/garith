@@ -13,6 +13,7 @@ CPPFLAGS += -MD
 GLUT_LDADD := -lglut -lGL -lGLU
 endif
 
+
 # targets
 TARGETS = garith # f2f
 

@@ -29,6 +29,8 @@ using std::runtime_error;
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 
 /*
@@ -341,6 +343,7 @@ main(int argc, char* argv[])
   data.balance = -1;
 
   // setup operators
+  mkdir(fileNameExpand("~/.arith").c_str(), 0755);
   savedKernelsFile = strdup(fileNameExpand("kernels", "~/.arith/").c_str());
   loadKernels(savedKernels, savedKernelsFile);
   savedTimesFile = strdup(fileNameExpand("times", "~/.arith/").c_str());
