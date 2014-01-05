@@ -43,7 +43,7 @@ namespace
     ">names here",
     "",
     "",
-    "www.yuv.info",
+    "www.thregr.org/~wavexx/",
     "",
     ""
   };

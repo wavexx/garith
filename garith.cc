@@ -301,6 +301,7 @@ main(int argc, char* argv[])
 {
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+  glutInitWindowSize(600, 800);
   glutCreateWindow(argv[0]);
   glutReshapeFunc(reshape);
   glutDisplayFunc(display);
@@ -323,7 +324,7 @@ main(int argc, char* argv[])
   // initialize default resources
   loadFontAF(resources.font, font);
   resources.cm = new GCharMap(resources.font);
-  resources.minWidth = 0.5;
+  resources.minWidth = 1.5;
   resources.videoRatio = 1.;
   resources.animTime = 1.;
   resources.minTime = 0.5;
@@ -387,6 +388,7 @@ main(int argc, char* argv[])
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_LINE_SMOOTH);
+  glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
   glLineWidth(resources.minWidth);
   glClearColor(resources.background[0], resources.background[1],
       resources.background[2], resources.background[3]);
