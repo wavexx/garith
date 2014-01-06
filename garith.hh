@@ -59,6 +59,7 @@ struct GameData
   int errorPenality;
   int timePenality;
   int balance;
+  int defaultTime;
 
   // helper functions
   void

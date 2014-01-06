@@ -342,6 +342,7 @@ main(int argc, char* argv[])
   data.errorPenality = 5;
   data.timePenality = 1;
   data.balance = -1;
+  data.defaultTime = 5;
 
   // setup operators
   mkdir(fileNameExpand("~/.arith").c_str(), 0755);
@@ -363,7 +364,7 @@ main(int argc, char* argv[])
       avg = old->second;
     else
     {
-      avg.cum = 20 * data.stackSize;
+      avg.cum = data.defaultTime * data.stackSize;
       avg.num = data.stackSize;
     }
 
