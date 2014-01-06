@@ -100,7 +100,7 @@ characters.
 
 
 Authors and Copyright
----------------------
+=====================
 
 `garith` can be found at http://www.thregr.org/~wavexx/hacks/garith/
 
