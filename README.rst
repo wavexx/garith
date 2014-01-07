@@ -26,7 +26,7 @@ block falls from the top, thus increasing the stack size.
 As the game progresses, the operations which you got more frequently wrong or
 that took longer to answer are chosen more likely, thus slowly increasing the
 difficulty. Also, the time allowed for each block converges towards your
-successful response average, giving you less time to think at each new block.
+successful response average, giving you less time to think.
 
 When the stack hits the top, the game is over.
 
