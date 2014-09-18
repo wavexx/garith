@@ -102,7 +102,7 @@ characters.
 Authors and Copyright
 =====================
 
-`garith` can be found at http://www.thregr.org/~wavexx/hacks/garith/
+`garith` can be found at http://www.thregr.org/~wavexx/software/garith/
 
 | `garith` is distributed under LGPL (see COPYING) WITHOUT ANY WARRANTY.
 | Copyright(c) 2005-2014 by wave++ "Yuri D'Elia" <wavexx@thregr.org>.
